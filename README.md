@@ -8,6 +8,16 @@ is uploaded, your files stay in your browser)
 
 ![Acid Lab](docs/screenshot.jpg)
 
+<!-- videos:start -->
+## See it in action
+
+<table><tr>
+<td width="64%" valign="top"><a href="docs/videos/tutorial.mp4"><img src="docs/videos/tutorial.jpg" alt="Full tutorial"></a><br><b>▶ <a href="docs/videos/tutorial.mp4">Full tutorial</a></b> (1:30, narrated, with captions)</td>
+</tr></table>
+
+Click any picture to play the video with sound.
+<!-- videos:end -->
+
 ## Two editions
 
 | | Desktop app (`server.py` + `web/`) | Browser edition (`browser/`) |
