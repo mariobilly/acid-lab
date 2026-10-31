@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Acid Lab</title>
+  <link rel="icon" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Glitch&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <img src="favicon.png" alt="">
+      <span class="logo" data-text="ACID LAB">ACID LAB</span>
+    </div>
+    <div class="media-name" id="mediaName">no media</div>
+    <div class="top-mid">
+      <label class="chaos" title="CHAOS: random glitch bursts and boosted intensities (beats trigger bursts too)">
+        <span>CHAOS</span>
+        <input type="range" id="chaos" min="0" max="1" step="0.01" value="0">
+        <b id="chaosVal">0</b>
+      </label>
+      <button class="btn ghost" id="dice" title="Roll a random effect stack (D)">🎲 Dice</button>
+      <button class="btn ghost" id="reseed" title="New random seed: same looks, different glitches">↻ Seed</button>
+    </div>
+    <div class="top-right">
+      <button class="btn ghost icon" id="undo" title="Undo (Ctrl+Z)">↶</button>
+      <button class="btn ghost icon" id="redo" title="Redo (Ctrl+Shift+Z)">↷</button>
+      <button class="btn primary" id="exportBtn" title="Export (E)">Export ⇣</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="left panel">
+      <section class="card">
+        <div class="card-h">Source</div>
+        <button class="btn wide" id="openBtn">Open video / image…</button>
+        <div class="hint">or drag a file anywhere onto the window</div>
+        <div class="media-info" id="mediaInfo"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-h">Subject cutout <span class="tag" id="maskTag">—</span></div>
+        <div class="seg" id="maskMode">
+          <button data-v="ai" title="AI cutout (GPU): best for skeletons, creatures, people">AI</button>
+          <button data-v="key" title="Auto key: background = the color at the frame edges">Key</button>
+          <button data-v="luma" title="Bright = subject">Luma</button>
+          <button data-v="none" title="No subject: subject effects cover the whole frame">Off</button>
+        </div>
+        <button class="btn wide acid" id="cutBtn">✂ Cut out subject</button>
+        <div class="progress hidden" id="cutProg"><i></i><span></span></div>
+        <div class="row"><label>threshold</label><input type="range" id="maskTh" min="0" max="1" step="0.01"><b id="maskThV"></b></div>
+        <div class="row"><label>softness</label><input type="range" id="maskSoft" min="0" max="1" step="0.01"><b id="maskSoftV"></b></div>
+        <div class="row toggles">
+          <label class="chk"><input type="checkbox" id="maskInv"> invert</label>
+          <label class="chk"><input type="checkbox" id="maskShow"> show mask <kbd>M</kbd></label>
+        </div>
+      </section>
+
+      <section class="card beat-card" id="beatCard">
+        <div class="card-h">♪ Beat Sync
+          <label class="switch" title="Randomize effects on the beat (B)"><input type="checkbox" id="beatOn"><i></i></label>
+        </div>
+        <div class="music-row">
+          <button class="btn wide" id="musicBtn">♫ Load music…</button>
+          <button class="btn icon ghost hidden" id="musicX" title="Remove the song">✕</button>
+        </div>
+        <div class="beat-info" id="beatInfo"></div>
+        <div class="row sel"><label>cut on</label><select id="beatEvery"></select></div>
+        <div class="row sel"><label title="What changes on each cut">each cut</label><select id="beatMode"></select></div>
+        <div class="row sel" id="beatTargetRow"><label title="The one effect that fires on the beat — the rest of your stack stays as it is">effect</label><select id="beatTarget"></select></div>
+        <div class="row sel" id="beatStyleRow"><label>hit style</label>
+          <div class="seg small" id="beatStyle"><button data-v="flash" title="On for the hit length, then off">flash</button><button data-v="pulse" title="Hits at full strength and fades out">fade out</button><button data-v="toggle" title="Switches on at one cut, off at the next">on / off</button></div></div>
+        <div class="row" id="beatHoldRow"><label title="How long each hit lasts, in beats">hit length</label><input type="range" id="beatHold" min="0.1" max="4" step="0.05"><b id="beatHoldV"></b></div>
+        <div class="row"><label>chance</label><input type="range" id="beatChance" min="0" max="1" step="0.01"><b id="beatChanceV"></b></div>
+        <div class="row" id="beatAmountRow"><label id="beatAmountL">variation</label><input type="range" id="beatAmount" min="0" max="1" step="0.01"><b id="beatAmountV"></b></div>
+        <div class="row"><label title="Zoom kick + glitch burst on every beat">beat punch</label><input type="range" id="beatPunch" min="0" max="1" step="0.01"><b id="beatPunchV"></b></div>
+        <div class="row" id="beatStartRow"><label title="Where in the song the video starts">song start</label><input type="range" id="beatStart" min="0" max="1" step="0.01"><b id="beatStartV"></b></div>
+        <div class="row sel" id="beatBarRow"><label title="Which detected beat counts as 1 (fix bars that feel off)">bar starts</label>
+          <div class="seg small" id="beatBar"><button data-v="0">1</button><button data-v="1">2</button><button data-v="2">3</button><button data-v="3">4</button></div></div>
+        <div class="chips hidden" id="beatPool"></div>
+      </section>
+
+      <section class="card looks-card">
+        <div class="card-h">Looks <button class="mini" id="saveLook" title="Save the current stack as your own look">+ save</button></div>
+        <div class="looks" id="looks"></div>
+      </section>
+    </aside>
+
+    <section class="stage">
+      <div class="viewport" id="viewport">
+        <canvas id="canvas"></canvas>
+        <div class="beat-hud hidden" id="beatHud"><i id="beatDot"></i><span id="beatLabel"></span><button class="mini" id="beatKeep" title="Keep this random combo as your stack">keep this</button></div>
+        <div class="split-handle hidden" id="splitHandle"><span>ORIGINAL ⟷ ACID</span></div>
+        <div class="empty" id="empty">
+          <div class="drop-ring">
+            <div class="big">Drop a video or image</div>
+            <div class="small">mp4 · mov · webm · png · jpg — or press <b>Open</b></div>
+            <div class="small">drop an <b>mp3 / wav</b> too: its beat drives ♪ Beat Sync</div>
+            <div class="small dim">Tip: pick a look on the left, then hit ✂ Cut out subject for the specimen looks</div>
+          </div>
+        </div>
+        <div class="busy hidden" id="busy"><div class="spinner"></div><div id="busyText">Preparing…</div><div class="progress"><i id="busyBar"></i></div></div>
+      </div>
+      <div class="transport">
+        <button class="btn icon" id="play" title="Play / pause (Space)">▶</button>
+        <button class="btn icon ghost" id="stepB" title="Previous frame (←)">⏮</button>
+        <button class="btn icon ghost" id="stepF" title="Next frame (→)">⏭</button>
+        <input type="range" id="scrub" min="0" max="1" step="1" value="0">
+        <span class="time" id="time">0:00.00 / 0:00.00</span>
+        <button class="btn icon ghost" id="mute" title="Mute preview audio">🔊</button>
+        <div class="seg small" id="compare">
+          <button data-v="0" class="on" title="Result">Acid</button>
+          <button data-v="1" title="Split before/after (C)">Split</button>
+          <button data-v="2" title="Original">Orig</button>
+        </div>
+        <select id="aspect" title="Output frame">
+          <option value="orig">Original</option>
+          <option value="9:16">9:16 Reel</option>
+          <option value="4:5">4:5 Feed</option>
+          <option value="1:1">1:1 Square</option>
+          <option value="16:9">16:9 Wide</option>
+        </select>
+        <select id="fit" title="How the source fills the frame">
+          <option value="cover">Fill</option>
+          <option value="contain">Fit</option>
+        </select>
+        <label class="zoom" title="Zoom">⌕<input type="range" id="zoom" min="0.5" max="3" step="0.01" value="1"></label>
+      </div>
+    </section>
+
+    <aside class="right panel">
+      <section class="card layers-card">
+        <div class="card-h">Layers <span class="dim" id="layerCount"></span>
+          <div class="add-wrap">
+            <button class="mini acid" id="addBtn">+ Add effect</button>
+            <div class="menu hidden" id="addMenu"></div>
+          </div>
+        </div>
+        <div class="beat-banner hidden" id="beatBanner">♪ Beat Sync is picking the stack on every cut — these are your base layers.
+          <button class="mini acid" id="bannerKeep">keep current cut</button></div>
+        <ol class="layers" id="layers"></ol>
+      </section>
+      <section class="card inspector" id="inspector"></section>
+    </aside>
+  </main>
+
+  <div class="drop-overlay hidden" id="dropOverlay"><div>Drop to load</div></div>
+
+  <div class="modal hidden" id="exportModal">
+    <div class="dialog">
+      <div class="dlg-h">Export <button class="mini ghost" id="exClose">✕</button></div>
+      <div id="exForm">
+        <div class="row"><label>file name</label><input type="text" id="exName"></div>
+        <div class="row"><label>quality</label>
+          <select id="exQuality"><option value="high">High</option><option value="max">Max</option></select></div>
+        <div class="row" id="exAudioRow"><label>audio</label><label class="chk"><input type="checkbox" id="exAudio" checked> <span id="exAudioLbl">keep original audio</span></label></div>
+        <div class="row" id="exDurRow"><label>length (s)</label><input type="number" id="exDur" min="1" max="600" step="0.5" value="5"></div>
+        <div class="ex-meta" id="exMeta"></div>
+        <div class="dlg-actions">
+          <button class="btn ghost" id="exStill">Save PNG still</button>
+          <button class="btn primary" id="exGo">Render MP4</button>
+        </div>
+      </div>
+      <div id="exRun" class="hidden">
+        <div class="progress big"><i id="exBar"></i></div>
+        <div class="ex-stat" id="exStat"></div>
+        <div class="dlg-actions"><button class="btn ghost" id="exCancel">Cancel</button></div>
+      </div>
+      <div id="exDone" class="hidden">
+        <div class="ex-done">✓ Saved</div>
+        <div class="ex-path" id="exPath"></div>
+        <div class="dlg-actions">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toasts" id="toasts"></div>
+  <script src="web-shim.js"></script>   <!-- web edition: stands in for the local server -->
+  <script src="mp4-muxer.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

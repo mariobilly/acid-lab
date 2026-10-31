@@ -1,0 +1,8 @@
+flask>=3.0
+numpy>=2.0
+pillow>=10.0
+librosa>=0.10
+# AI cut-out. A GPU is strongly recommended: install PyTorch with CUDA first, e.g.
+#   pip install torch --index-url https://download.pytorch.org/whl/cu128
+transparent-background>=1.3
+rembg>=2.0
