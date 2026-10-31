@@ -13,6 +13,7 @@ is uploaded, your files stay in your browser)
 
 <table><tr>
 <td width="64%" valign="top"><a href="docs/videos/tutorial.mp4"><img src="docs/videos/tutorial.jpg" alt="Full tutorial"></a><br><b>▶ <a href="docs/videos/tutorial.mp4">Full tutorial</a></b> (1:30, narrated, with captions)</td>
+<td width="36%" valign="top" align="center"><a href="docs/videos/ad.mp4"><img src="docs/videos/ad.gif" alt="25-second reel" width="240"></a><br><b>▶ <a href="docs/videos/ad.mp4">25-second reel</a></b></td>
 </tr></table>
 
 Click any picture to play the video with sound.
